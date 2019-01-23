@@ -5,6 +5,14 @@
 	session_start();
 	error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
+if ($_SESSION['user_authorized'] == 1) {
+    $user_authorized = $_SESSION['user_authorized'];
+    $userid = $_SESSION['userid'];
+
+    $user_details = $connect->query("SELECT * FROM users WHERE UserID = '$userid'");
+    $user = $user_details->fetch_assoc();
+}
+
 if (isset($_GET["search_recipes_btn"])){
 	
 	
@@ -106,7 +114,25 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 							<li><a href="about.html">Σχετικα με εμας</a></li>
 							<li><a href="gallery.html">Γκαλερι</a></li>
 							<li><a href="contact.html">Επικοινωνια</a></li>
-							<li class="login_register_btn"><a href="users/login">Συνδεση / Εγγραφη</a></li>
+                            <?php
+                            if ($_SESSION['user_authorized'] == 1) {
+                                ?>
+                                <li class="login_register_btn profile_options">
+                                    <a><?= $user['Name'] ?> <?= $user['Surname'] ?></a>
+                                    <div class="dropdown-content">
+                                        <a href="users/dashboard">Πίνακας ελέγχου</a>
+                                        <a href="users/login/logout.php">Αποσύνδεση</a>
+                                    </div>
+
+                                </li>
+
+                                <?php
+                            } else {
+                                ?>
+                                <li class="login_register_btn"><a href="users/login">Συνδεση / Εγγραφη</a></li>
+                                <?php
+                            }
+                            ?>
 						</ul>
 					</nav>
 				</div>
@@ -271,11 +297,10 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 }
 ?>
 <?php
-	$online_user = 1;
-	$userid = 2;
+
 	while($row = mysqli_fetch_array($output1))  
 	{
-		if ( $online_user == 1 ) {
+		if ( $user_authorized == 1 ) {
 			$recipeid = $row["RecipeID"];
 			$result_wishlist = $connect->query("SELECT * FROM wishlist WHERE RecipeID = '$recipeid' AND UserID = '$userid'");  
 			
@@ -290,7 +315,7 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 			</aside>
 			<div class="recipe_dish">
 				<?php
-				if ( $online_user == 1 ) {
+				if ( $user_authorized == 1 ) {
 					if ( $result_wishlist->num_rows > 0 ) {
 				?>
 						<i value="<?= $row["RecipeID"] ?>" id="<?= $row["RecipeID"] ?>" class="iconheart fa fa-heart" style="color:#e63939;"></i>
@@ -375,7 +400,7 @@ $(document).on('click', '.iconheart', function(){
 	var userid = <?= $userid; ?>;
 	var action = "Check";
 	
-	if (<?= $online_user ?> == "0"){
+	if (<?= $user_authorized ?> == "0"){
 		$('#login').modal('show');
 	}else{
 		$.ajax(
@@ -461,6 +486,10 @@ function run_ajax_fetch(){
 <!-- for bootstrap working -->
 	<script src="js/bootstrap.js"></script>
 <!-- //for bootstrap working -->
+<script>
+    var profile_options = $('.profile_options').width();
+    $('.dropdown-content').width(profile_options);
+</script>
 
 </body>
 </html>

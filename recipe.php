@@ -5,6 +5,13 @@
 	session_start();
 	error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
+if ($_SESSION['user_authorized'] == 1) {
+    $userid = $_SESSION['userid'];
+
+    $user_details = $connect->query("SELECT * FROM users WHERE UserID = '$userid'");
+    $user = $user_details->fetch_assoc();
+}
+
 	if (isset($_GET["recipeid"])){
 		$recipeid = $_GET["recipeid"];
 	}
@@ -81,7 +88,25 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 							<li><a href="about.html">Σχετικα με εμας</a></li>
 							<li><a href="gallery.html">Γκαλερι</a></li>
 							<li><a href="contact.html">Επικοινωνια</a></li>
-							<li class="login_register_btn"><a href="users/login">Συνδεση / Εγγραφη</a></li>
+                            <?php
+                            if ($_SESSION['user_authorized'] == 1) {
+                                ?>
+                                <li class="login_register_btn profile_options">
+                                    <a><?= $user['Name'] ?> <?= $user['Surname'] ?></a>
+                                    <div class="dropdown-content">
+                                        <a href="users/dashboard">Πίνακας ελέγχου</a>
+                                        <a href="users/login/logout.php">Αποσύνδεση</a>
+                                    </div>
+
+                                </li>
+
+                                <?php
+                            } else {
+                                ?>
+                                <li class="login_register_btn"><a href="users/login">Συνδεση / Εγγραφη</a></li>
+                                <?php
+                            }
+                            ?>
 						</ul>
 					</nav>
 				</div>
@@ -360,6 +385,11 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 <!-- for bootstrap working -->
 	<script src="js/bootstrap.js"></script>
 <!-- //for bootstrap working -->
+
+<script>
+    var profile_options = $('.profile_options').width();
+    $('.dropdown-content').width(profile_options);
+</script>
 
 </body>
 </html>

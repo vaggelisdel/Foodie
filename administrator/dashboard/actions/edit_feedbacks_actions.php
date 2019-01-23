@@ -9,7 +9,6 @@ if (isset($_POST["action"])) {
 	
 		$sql = "DELETE FROM `feedback` WHERE `FeedBackID` = '$feedbackID';";
 		$connect->query($sql);
-		$_SESSION['return_msg'] = "Material deleted!";
 		header("Location: ../all_feedbacks.php");
 }else{
 	header("Location: ../index.php");

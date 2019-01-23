@@ -1,3 +1,35 @@
+<?php
+require '../../connection.php';
+session_name("session3");
+session_start();
+error_reporting(E_ERROR | E_WARNING | E_PARSE);
+
+if ($_SESSION['user_authorized'] == 1) {
+    $userid = $_SESSION['userid'];
+
+    $user_details = $connect->query("SELECT * FROM users WHERE UserID = '$userid'");
+    $user = $user_details->fetch_assoc();
+
+    $result1 = $connect->query("SELECT count(*) as totalrecipes FROM recipes WHERE UserID = '$userid'");
+    $recipes = $result1->fetch_assoc();
+
+    $result2 = $connect->query("SELECT count(*) as totalwishes FROM wishlist WHERE UserID = '$userid'");
+    $wishlist = $result2->fetch_assoc();
+
+    $result3 = $connect->query("SELECT count(*) as totalfeeds FROM feedback WHERE OwnerID = '$userid'");
+    $feedbacks = $result3->fetch_assoc();
+
+    $query = "SELECT * FROM recipes WHERE UserID = '$userid' ORDER BY CreatedDate DESC LIMIT 3";
+    $result4 = mysqli_query($connect, $query);
+
+    $query1 = "SELECT * FROM feedback WHERE OwnerID = '$userid' ORDER BY feedback.Date DESC LIMIT 5";
+    $result5 = mysqli_query($connect, $query1);
+
+} else {
+    $_SESSION["user_message"] = "Δεν επιτρέπεται η πρόσβαση. Πρέπει πρώτα να συνδεθείτε!";
+    header("Location: ../login/alert.php");
+}
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -33,7 +65,7 @@
         <nav class="navbar navbar-static-top">
             <div class="container">
                 <div class="navbar-header">
-                    <a href="index.html" class="navbar-brand"><img class="imglogo" src="../../images/logo2.png"></a>
+                    <a href="../../" class="navbar-brand"><img class="imglogo" src="../../images/logo2.png"></a>
                     <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
                             data-target="#navbar-collapse">
                         <i class="fa fa-bars"></i>
@@ -44,77 +76,21 @@
                 <div class="collapse navbar-collapse pull-left" id="navbar-collapse">
                     <ul class="nav navbar-nav">
                         <li class="active"><a href="index.php">Πίνακας ελέγχου</a></li>
-                        <li><a href="">Επιθυμητές συνταγές</a></li>
-                        <li><a href="">Κατάταξη</a></li>
+                        <li><a href="wishlist.php">Επιθυμητές συνταγές</a></li>
+                        <li><a href="feedback.php">Σχόλια</a></li>
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Οι συνταγές μου <span
-                                    class="caret"></span></a>
+                                        class="caret"></span></a>
                             <ul class="dropdown-menu">
-                                <li><a href="#">Δημιουργία</a></li>
-                                <li><a href="#">Προβολή όλων</a></li>
+                                <li><a href="create_recipe.php">Δημιουργία</a></li>
+                                <li><a href="myrecipes.php">Προβολή όλων</a></li>
                             </ul>
                         </li>
                     </ul>
                 </div>
                 <!-- /.navbar-collapse -->
                 <!-- Navbar Right Menu -->
-                <div class="navbar-custom-menu">
-                    <ul class="nav navbar-nav">
-                        <!-- Notifications Menu -->
-                        <li class="dropdown notifications-menu">
-                            <!-- Menu toggle button -->
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <i class="fa fa-bell-o"></i>
-                                <span class="label label-success">10</span>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li class="header">Έχετε 10 ειδοποιήσεις</li>
-                                <li>
-                                    <!-- Inner Menu: contains the notifications -->
-                                    <ul class="menu">
-                                        <li><!-- start notification -->
-                                            <a href="#">
-                                                <i class="fa fa-users text-aqua"></i> 5 new members joined today
-                                            </a>
-                                        </li>
-                                        <!-- end notification -->
-                                    </ul>
-                                </li>
-                                <li class="footer"><a href="#">Προβολή όλων</a></li>
-                            </ul>
-                        </li>
-                        <!-- User Account Menu -->
-                        <li class="dropdown user user-menu">
-                            <!-- Menu Toggle Button -->
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <!-- The user image in the navbar-->
-                                <img src="dist/img/user2-160x160.jpg" class="user-image" alt="User Image">
-                                <!-- hidden-xs hides the username on small devices so only the image appears. -->
-                                <span class="hidden-xs">Alexander Pierce</span>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <!-- The user image in the menu -->
-                                <li class="user-header">
-                                    <img src="dist/img/user2-160x160.jpg" class="img-circle" alt="User Image">
-
-                                    <p>
-                                        Alexander Pierce - Web Developer
-                                        <small>Μέλος από: Nov. 2012</small>
-                                    </p>
-                                </li>
-                                <!-- Menu Footer-->
-                                <li class="user-footer">
-                                    <div class="pull-left">
-                                        <a href="#" class="btn btn-default btn-flat">Το προφίλ μου</a>
-                                    </div>
-                                    <div class="pull-right">
-                                        <a href="#" class="btn btn-default btn-flat">Αποσύνδεση</a>
-                                    </div>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
+                <?php require_once 'navbar_top.php'; ?>
                 <!-- /.navbar-custom-menu -->
             </div>
             <!-- /.container-fluid -->
@@ -139,67 +115,51 @@
 
                 <div class="col-md-12">
                     <div class="row">
-                        <div class="col-lg-3 col-xs-6">
+                        <div class="col-lg-4 col-xs-6">
                             <!-- small box -->
                             <div class="small-box bg-aqua">
                                 <div class="inner">
-                                    <h3>150</h3>
+                                    <h3><?= $recipes['totalrecipes']; ?></h3>
 
                                     <p>Οι συνταγές μου</p>
                                 </div>
                                 <div class="icon">
                                     <i class="ion ion-pizza"></i>
                                 </div>
-                                <a href="#" class="small-box-footer">Περισσότερα <i
-                                        class="fa fa-arrow-circle-right"></i></a>
+                                <a href="myrecipes.php" class="small-box-footer">Περισσότερα <i
+                                            class="fa fa-arrow-circle-right"></i></a>
                             </div>
                         </div>
                         <!-- ./col -->
-                        <div class="col-lg-3 col-xs-6">
+                        <div class="col-lg-4 col-xs-6">
                             <!-- small box -->
-                            <div class="small-box bg-red">
+                            <div class="small-box bg-yellow">
                                 <div class="inner">
-                                    <h3>53</h3>
+                                    <h3><?= $wishlist['totalwishes']; ?></h3>
 
                                     <p>Επιθυμητές συνταγές</p>
                                 </div>
                                 <div class="icon">
                                     <i class="ion ion-heart"></i>
                                 </div>
-                                <a href="#" class="small-box-footer">Περισσότερα <i
-                                        class="fa fa-arrow-circle-right"></i></a>
+                                <a href="wishlist.php" class="small-box-footer">Περισσότερα <i
+                                            class="fa fa-arrow-circle-right"></i></a>
                             </div>
                         </div>
                         <!-- ./col -->
-                        <div class="col-lg-3 col-xs-6">
-                            <!-- small box -->
-                            <div class="small-box bg-yellow">
-                                <div class="inner">
-                                    <h3>44&nbsp;<sup style="font-size: 20px">No.</sup></h3>
-
-                                    <p>Κατάταξη</p>
-                                </div>
-                                <div class="icon">
-                                    <i class="ion ion-ios-pulse"></i>
-                                </div>
-                                <a href="#" class="small-box-footer">Περισσότερα <i
-                                        class="fa fa-arrow-circle-right"></i></a>
-                            </div>
-                        </div>
-                        <!-- ./col -->
-                        <div class="col-lg-3 col-xs-6">
+                        <div class="col-lg-4 col-xs-6">
                             <!-- small box -->
                             <div class="small-box bg-green">
                                 <div class="inner">
-                                    <h3>65</h3>
+                                    <h3><?= $feedbacks['totalfeeds']; ?></h3>
 
                                     <p>Σχόλια</p>
                                 </div>
                                 <div class="icon">
                                     <i class="ion ion-chatbubbles"></i>
                                 </div>
-                                <a href="#" class="small-box-footer">Περισσότερα <i
-                                        class="fa fa-arrow-circle-right"></i></a>
+                                <a href="feedback.php" class="small-box-footer">Περισσότερα <i
+                                            class="fa fa-arrow-circle-right"></i></a>
                             </div>
                         </div>
                         <!-- ./col -->
@@ -211,7 +171,8 @@
                 <div class="col-md-12">
                     <div class="box box-info">
                         <div class="box-header with-border">
-                            <h3 class="box-title">latest orders</h3>
+                            <i class="fa fa-cutlery"></i>
+                            <h3 class="box-title">Πρόσφατες συνταγές</h3>
                         </div>
                         <!-- /.box-header -->
                         <div class="box-body">
@@ -219,83 +180,55 @@
                                 <table class="table no-margin">
                                     <thead>
                                     <tr>
-                                        <th>order id</th>
-                                        <th>item</th>
-                                        <th>status</th>
-                                        <th>popularity</th>
+                                        <th>ID</th>
+                                        <th>Συνταγή</th>
+                                        <th>Δημοτικότητα</th>
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <tr>
-                                        <td><a href="pages/examples/invoice.html">or9842</a></td>
-                                        <td>call of duty iv</td>
-                                        <td><span class="label label-success">shipped</span></td>
-                                        <td>
-                                            <div class="sparkbar" data-color="#00a65a" data-height="20">
-                                                90,80,90,-70,61,-83,63
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href="pages/examples/invoice.html">or1848</a></td>
-                                        <td>samsung smart tv</td>
-                                        <td><span class="label label-warning">pending</span></td>
-                                        <td>
-                                            <div class="sparkbar" data-color="#f39c12" data-height="20">
-                                                90,80,-90,70,61,-83,68
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href="pages/examples/invoice.html">or7429</a></td>
-                                        <td>iphone 6 plus</td>
-                                        <td><span class="label label-danger">delivered</span></td>
-                                        <td>
-                                            <div class="sparkbar" data-color="#f56954" data-height="20">
-                                                90,-80,90,70,-61,83,63
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href="pages/examples/invoice.html">or7429</a></td>
-                                        <td>samsung smart tv</td>
-                                        <td><span class="label label-info">processing</span></td>
-                                        <td>
-                                            <div class="sparkbar" data-color="#00c0ef" data-height="20">
-                                                90,80,-90,70,-61,83,63
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href="pages/examples/invoice.html">or1848</a></td>
-                                        <td>samsung smart tv</td>
-                                        <td><span class="label label-warning">pending</span></td>
-                                        <td>
-                                            <div class="sparkbar" data-color="#f39c12" data-height="20">
-                                                90,80,-90,70,61,-83,68
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href="pages/examples/invoice.html">or7429</a></td>
-                                        <td>iphone 6 plus</td>
-                                        <td><span class="label label-danger">delivered</span></td>
-                                        <td>
-                                            <div class="sparkbar" data-color="#f56954" data-height="20">
-                                                90,-80,90,70,-61,83,63
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href="pages/examples/invoice.html">or9842</a></td>
-                                        <td>call of duty iv</td>
-                                        <td><span class="label label-success">shipped</span></td>
-                                        <td>
-                                            <div class="sparkbar" data-color="#00a65a" data-height="20">
-                                                90,80,90,-70,61,-83,63
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    <?php
+                                    while ($latestorders = mysqli_fetch_array($result4)) {
+
+                                        $recipeid = $latestorders['RecipeID'];
+                                        $result_score = $connect->query("SELECT AVG(Score) AS recipe_avgscore, COUNT(*) AS recipe_count FROM feedback WHERE RecipeID = '$recipeid'");
+                                        $avgscore_recipe = $result_score->fetch_assoc();
+                                        ?>
+
+                                        <tr>
+                                            <td><a href="edit_recipe.php?recipeid=<?= $latestorders['RecipeID']; ?>" target="_blank">Order<?= $latestorders['RecipeID']; ?></a></td>
+                                            <td><?= $latestorders['Title']; ?></td>
+                                            <td>
+                                                <?php
+                                                if ($avgscore_recipe['recipe_count'] >= 10) {
+                                                    if ($avgscore_recipe['recipe_avgscore'] < 2.5) {
+                                                        ?>
+                                                        <span class="label label-danger">Πολύ Χαμηλή</span>
+                                                        <?php
+                                                    } elseif (($avgscore_recipe['recipe_avgscore'] >= 2.5) && ($avgscore_recipe['recipe_avgscore'] < 5)) {
+                                                        ?>
+                                                        <span class="label label-warning">Χαμηλή</span>
+                                                        <?php
+                                                    } elseif (($avgscore_recipe['recipe_avgscore'] >= 5) && ($avgscore_recipe['recipe_avgscore'] < 7.5)) {
+                                                        ?>
+                                                        <span class="label label-success">Υψηλή</span>
+                                                        <?php
+                                                    } elseif ($avgscore_recipe['recipe_avgscore'] >= 7.5) {
+                                                        ?>
+                                                        <span class="label label-info">Πολύ Υψηλή</span>
+                                                        <?php
+                                                    }
+                                                } else {
+                                                    ?>
+                                                    <span class="label label-default">Μη διαθέσιμη</span>
+                                                    <?php
+                                                }
+                                                ?>
+
+                                            </td>
+                                        </tr>
+                                        <?php
+                                    }
+                                    ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -303,10 +236,10 @@
                         </div>
                         <!-- /.box-body -->
                         <div class="box-footer clearfix">
-                            <a href="javascript:void(0)" class="btn btn-sm btn-info btn-flat pull-left">place new
-                                order</a>
-                            <a href="javascript:void(0)" class="btn btn-sm btn-default btn-flat pull-right">view all
-                                orders</a>
+                            <a href="create_recipe.php" target="_blank" class="btn btn-sm btn-danger btn-flat pull-left">Δημιουργία
+                                νέας συνταγής</a>
+                            <a href="myrecipes.php" target="_blank" class="btn btn-sm btn-default btn-flat pull-right">Προβολή
+                                όλων των συνταγών</a>
                         </div>
                         <!-- /.box-footer -->
                     </div>
@@ -319,66 +252,39 @@
                         <div class="box-header">
                             <i class="fa fa-comments-o"></i>
 
-                            <h3 class="box-title">Chat</h3>
+                            <h3 class="box-title">Σχόλια</h3>
                         </div>
                         <div class="box-body chat" id="chat-box">
                             <!-- chat item -->
-                            <div class="item">
-                                <img src="dist/img/user4-128x128.jpg" alt="user image" class="online">
+                            <?php
+                            while ($feedback_review = mysqli_fetch_array($result5)) {
 
-                                <p class="message">
-                                    <a href="#" class="name">
-                                        <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 2:15</small>
-                                        Mike Doe
+                                $feedback_userid = $feedback_review['UserID'];
+                                $feedback_recipeid = $feedback_review['RecipeID'];
+
+                                $feedback_result = $connect->query("SELECT users.*, recipes.* FROM users, recipes WHERE users.UserID = '$feedback_userid' AND recipes.RecipeID = '$feedback_recipeid'");
+                                $feedback_data = $feedback_result->fetch_assoc();
+                                ?>
+                                <div class="item">
+                                    <a href="feedback.php?feedbackid=<?= $feedback_review['FeedBackID'] ?>" class="name">
+                                        <img src="../../images/comment_icon.png">
+
+                                        <p class="message">
+                                            <small class="text-muted pull-right"><i
+                                                        class="fa fa-clock-o"></i> <?= $feedback_review['Date']; ?>
+                                            </small>
+                                            <?= $feedback_data['Name']; ?> <?= $feedback_data['Surname']; ?>
+<br>
+                                            <b><?= $feedback_data['Title']; ?>:</b> <?= $feedback_review['Review']; ?>
+                                            <br>
+                                            Σκόρ: <?= $feedback_review['Score']; ?>,
+                                            Δυσκολία: <?= $feedback_review['Difficulty']; ?>
+                                        </p>
                                     </a>
-                                    I would like to meet you to discuss the latest news about
-                                    the arrival of the new theme. They say it is going to be one the
-                                    best themes on the market
-                                </p>
-                                <div class="attachment">
-                                    <h4>Attachments:</h4>
-
-                                    <p class="filename">
-                                        Theme-thumbnail-image.jpg
-                                    </p>
-
-                                    <div class="pull-right">
-                                        <button type="button" class="btn btn-primary btn-sm btn-flat">Open</button>
-                                    </div>
                                 </div>
-                                <!-- /.attachment -->
-                            </div>
-                            <!-- /.item -->
-                            <!-- chat item -->
-                            <div class="item">
-                                <img src="dist/img/user3-128x128.jpg" alt="user image" class="offline">
-
-                                <p class="message">
-                                    <a href="#" class="name">
-                                        <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 5:15</small>
-                                        Alexander Pierce
-                                    </a>
-                                    I would like to meet you to discuss the latest news about
-                                    the arrival of the new theme. They say it is going to be one the
-                                    best themes on the market
-                                </p>
-                            </div>
-                            <!-- /.item -->
-                            <!-- chat item -->
-                            <div class="item">
-                                <img src="dist/img/user2-160x160.jpg" alt="user image" class="offline">
-
-                                <p class="message">
-                                    <a href="#" class="name">
-                                        <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 5:30</small>
-                                        Susan Doe
-                                    </a>
-                                    I would like to meet you to discuss the latest news about
-                                    the arrival of the new theme. They say it is going to be one the
-                                    best themes on the market
-                                </p>
-                            </div>
-                            <!-- /.item -->
+                                <?php
+                            }
+                            ?>
                         </div>
                         <!-- /.chat -->
                     </div>

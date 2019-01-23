@@ -64,7 +64,7 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 						<span class="icon-bar"></span>
 					</button>
 					<div class="w3_navigation_pos">
-						<a href="."><img src="../../images/logo1.png" class="logoimg" alt=""/></a>
+						<a href="../../"><img src="../../images/logo1.png" class="logoimg" alt=""/></a>
 					</div>
 				</div>
 				<!-- Collect the nav links, forms, and other content for toggling -->

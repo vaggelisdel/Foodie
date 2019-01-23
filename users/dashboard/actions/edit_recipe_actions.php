@@ -78,7 +78,7 @@ if (isset($_POST["save_recipe_changes_btn"])){
 	
 	
 	
-	header("Location: ../all_recipes.php");
+	header("Location: ../myrecipes.php");
 	
 }else if (isset($_POST["deleteinput"])){
 	$recipeid = $_POST["recipeid"];

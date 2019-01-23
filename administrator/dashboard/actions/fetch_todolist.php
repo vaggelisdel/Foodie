@@ -25,7 +25,7 @@
 							}else{
 				echo			"<input type='checkbox' checked class='activebtn' value='".$row['ToDoListID']."' id='".$row['ToDoListID']."' name=''>
 								<small class='badge badge-warning'><i class='fa fa-clock-o'></i> ".$row['CreatedDate']."</small>
-								<span class='text' style='text-decoration: line-through;'>".$row['Description']."</span>&nbsp;&nbsp;&nbsp;<img src='../../images/complete.png' style='width:40px;'>";
+								<span class='text' style='text-decoration: line-through;'>".$row['Description']."</span>";
 							}
 				echo		"<div class='tools'>
 							<i class='fa fa-trash-o deleteitem' value='".$row['ToDoListID']."'></i>
